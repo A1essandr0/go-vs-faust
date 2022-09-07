@@ -43,8 +43,9 @@ services:
     container_name: init-kafka-go-vs-faust
     depends_on:
       - kafka
-    command: "bash -c 'echo Create topics ... && kafka-topics --create --if-not-exists --bootstrap-server kafka:9092 --topic test_events --partitions 2'"
-
+    command: "bash -c 'echo Create topics ... && \
+      kafka-topics --create --if-not-exists --bootstrap-server kafka:9092 --topic test-events-from --partitions 2 && \
+      kafka-topics --create --if-not-exists --bootstrap-server kafka:9092 --topic test-events-to --partitions 2'"
 
   python_collector:
     image: python_collector:latest
@@ -54,7 +55,6 @@ services:
     restart: "no"
     ports:
       - "5005:5005"
-
     depends_on:
       - kafka
       - zookeeper
@@ -72,13 +72,21 @@ services:
   #     - init-kafka
   #     - zookeeper
   #     - python_collector
-  #   command: ["./wait-for-it.sh", "kafka-go-vs-faust:5432", "--", "python", "-m", "faust", "-A", "main", "worker", "-l", "info"]
+  #   command: ["./wait-for-it.sh", "kafka-go-vs-faust:5432", "--", "./python-sender.sh"]
 
 
 
   # go_collector:
   #   image: go_collector:latest
   #   container_name: go_collector
+  #   environment:
+  #     VAR: VALUE
+  #   restart: "no"
+  #   ports:
+  #     - "5005:5005"
+  #   depends_on:
+  #     - kafka
+  #     - zookeeper
 
   go_sender:
     image: go_sender:latest

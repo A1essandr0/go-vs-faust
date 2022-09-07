@@ -48,13 +48,21 @@ app = faust.App(
     web_port="6050",
 )
 
-topic = app.topic(
-    "test_events", 
-    partitions=8, 
+topic_from = app.topic(
+    "test-events-from",
+    partitions=2,
+    value_serializer=PydanticSerializer(RawEvent)
+)
+topic_to = app.topic(
+    "test-events-to",
+    partitions=2,
     value_serializer=PydanticSerializer(RawEvent)
 )
 
-@app.agent(topic)
+
+@app.agent(topic_from)
 async def on_event(stream) -> None:
     async for msg_key, event in stream.items():
         print(f"Received :: {event=}")
+        await topic_to.send(key="key", value=event)
+        print("...sent further...")

@@ -7,7 +7,7 @@ KAFKA_BROKER = "kafka-go-vs-faust:9092"
 KAFKA_USERNAME = "username"
 KAFKA_PASSWORD = "password"
 KAFKA_NO_SASL = True
-KAFKA_EVENTS_TOPIC = 'test_events'
+KAFKA_EVENTS_TOPIC = 'test-events-from'
 
 
 logger = logging.getLogger(__name__)

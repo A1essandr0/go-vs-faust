@@ -15,13 +15,12 @@ import (
 )
 
 var (
-	// brokers = []string{"localhost:9093"}
-	// sourceTopic goka.Stream = "raw-events"
-	// processedTopic goka.Stream = "processed-events"
 	groupName goka.Group = "gosender"
 
+	// brokers = []string{"localhost:9093"}
 	brokers = []string{"kafka-go-vs-faust:9092"}
-	sourceTopic goka.Stream = "test_events"
+	sourceTopic goka.Stream = "test-events-from"
+	processedTopic goka.Stream = "test-events-to"
 
 	tmc *goka.TopicManagerConfig
 	cfg *sarama.Config
@@ -52,13 +51,13 @@ func OnEvent(ctx goka.Context, rawmsg interface{}) {
 	log.Printf("Received event: %+v", msg)
 
 	// emitting result
-	// marshalled, err := json.Marshal(msg)
-	// if err != nil {
-	// 	log.Printf("error sending data %v; %v", msg, err)
-	// } else {
-	// 	log.Println("Sending serialized: ", string(marshalled))
-	// 	ctx.Emit(processedTopic, "key", string(marshalled))		
-	// }
+	marshalled, err := json.Marshal(msg)
+	if err != nil {
+		log.Printf("error sending data %v; %v", msg, err)
+	} else {
+		log.Println("Sending serialized further: ", string(marshalled))
+		ctx.Emit(processedTopic, "key", string(marshalled))		
+	}
 }
 
 
@@ -66,7 +65,7 @@ func runApplication() {
 	group := goka.DefineGroup(
 		groupName,
 		goka.Input(sourceTopic, new(codec.String), OnEvent),
-		// goka.Output(processedTopic, new(codec.String)),
+		goka.Output(processedTopic, new(codec.String)),
 		goka.Persist(new(codec.Int64)),
 	)
 	application, err := goka.NewProcessor(
