@@ -1,0 +1,95 @@
+version: "3"
+
+services:
+  zookeeper:
+    image: zookeeper:latest
+    container_name: zookeeper-go-vs-faust
+    ports:
+      - 2181:2181
+    restart: "no"
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    container_name: kafka-go-vs-faust
+    depends_on:
+      - zookeeper
+    ports:
+      - 9092:9092
+      - 9093:9093
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_LISTENERS: INTERNAL://0.0.0.0:9092,PLAINTEXT://0.0.0.0:9093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:9092,PLAINTEXT://localhost:9093
+      ALLOW_PLAINTEXT_LISTENER: "yes"
+
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_LOG4J_ROOT_LOGLEVEL: WARN
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_MESSAGE_MAX_BYTES: 10485760
+      KAFKA_SOCKET_REQUEST_MAX_BYTES: 100001200
+    restart: "no"
+    # volumes:
+    #   - ./kafka-data:/var/lib/kafka/data
+
+  init-kafka:
+    image: confluentinc/cp-kafka:latest
+    container_name: init-kafka-go-vs-faust
+    depends_on:
+      - kafka
+    command: "bash -c 'echo Create topics ... && kafka-topics --create --if-not-exists --bootstrap-server kafka:9092 --topic test_events --partitions 2'"
+
+
+  python_collector:
+    image: python_collector:latest
+    container_name: python_collector
+    environment:
+      VAR: VALUE
+    restart: "no"
+    ports:
+      - "5005:5005"
+
+    depends_on:
+      - kafka
+      - zookeeper
+
+  # python_sender:
+  #   image: python_sender:latest
+  #   container_name: python_sender
+  #   environment:
+  #     VAR: VALUE
+  #   restart: "no"
+  #   ports:
+  #     - "6050:6050"
+  #   depends_on:
+  #     - kafka
+  #     - init-kafka
+  #     - zookeeper
+  #     - python_collector
+  #   command: ["./wait-for-it.sh", "kafka-go-vs-faust:5432", "--", "python", "-m", "faust", "-A", "main", "worker", "-l", "info"]
+
+
+
+  # go_collector:
+  #   image: go_collector:latest
+  #   container_name: go_collector
+
+  go_sender:
+    image: go_sender:latest
+    container_name: go_sender
+    environment:
+      VAR: VALUE
+    restart: "no"
+    depends_on:
+      - kafka
+      - init-kafka
+      - zookeeper
+      - python_collector
+    command: ["./wait-for-it.sh", "kafka-go-vs-faust:5432", "--", "./go-sender"]
+
