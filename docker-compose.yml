@@ -87,7 +87,9 @@ services:
       - kafka
       - init-kafka
       - zookeeper
-    command: ["./wait-for-it.sh", "kafka-go-vs-faust:5432", "--", "./go-collector"]
+    command: ["./wait-and-start.sh"]
+    # when using container with bash
+    # command: ["./wait-for-it.sh", "kafka-go-vs-faust:5432", "--", "./go-collector"]
 
   go_sender:
     image: go_sender:latest
@@ -99,5 +101,7 @@ services:
       - kafka
       - init-kafka
       - zookeeper
-    command: ["./wait-for-it.sh", "kafka-go-vs-faust:5432", "--", "./go-sender"]
+    command: ["./wait-and-start.sh"]
+    # when using container with bash
+    # command: ["./wait-for-it.sh", "kafka-go-vs-faust:5432", "--", "./go-sender"]
 

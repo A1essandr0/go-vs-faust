@@ -1,12 +1,19 @@
-FROM golang:1.19-alpine
+FROM golang:1.19-alpine as builder
 
-RUN apk add --no-cache bash
+WORKDIR /install
+
+COPY . ./
+RUN go mod download
+RUN CGO_ENABLED=0 go build -o /install/go-collector
+
+
+FROM gcr.io/distroless/static-debian11
 
 WORKDIR /app
 
-COPY go.mod ./
-COPY go.sum ./
-RUN go mod download
+COPY --from=busybox:1.35.0-uclibc /bin/sh /bin/sh
+COPY --from=busybox:1.35.0-uclibc /bin/sleep /bin/sleep
 
-COPY *.* ./
-RUN go build -o go-collector
+COPY --from=builder /install/go-collector /app
+
+COPY ./wait-and-start.sh ./
