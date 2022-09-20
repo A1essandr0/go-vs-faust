@@ -4,9 +4,6 @@ from aiokafka import AIOKafkaProducer
 
 
 KAFKA_BROKER = "kafka-go-vs-faust:9092"
-KAFKA_USERNAME = "username"
-KAFKA_PASSWORD = "password"
-KAFKA_NO_SASL = True
 KAFKA_EVENTS_TOPIC = 'test-events-from'
 
 
@@ -15,7 +12,6 @@ logger = logging.getLogger(__name__)
 
 class MetaSingleton(type):
     _instances = {}
-
     def __call__(cls, *args, **kwargs):
         if cls not in cls._instances:
             cls._instances[cls] = super(MetaSingleton, cls).__call__(*args, **kwargs)
@@ -27,23 +23,7 @@ class KafkaClient(metaclass=MetaSingleton):
         self.producer = None
 
     async def producer_start(self):
-        bootstrap_servers = KAFKA_BROKER
-        sasl_plain_username = KAFKA_USERNAME
-        sasl_plain_password = KAFKA_PASSWORD
-        logger.info(f"Starting kafka producer: {bootstrap_servers} {sasl_plain_username} {sasl_plain_password}")
-
-        if KAFKA_NO_SASL:
-            logger.info("Disabled SASL in kafka connection")
-            producer = AIOKafkaProducer(bootstrap_servers=bootstrap_servers)
-        else:
-            logger.info("enabled SASL in kafka connection")
-            producer = AIOKafkaProducer(
-                bootstrap_servers=bootstrap_servers,
-                sasl_plain_username=sasl_plain_username,
-                sasl_plain_password=sasl_plain_password,
-                sasl_mechanism="PLAIN",
-                security_protocol="SASL_PLAINTEXT",
-            )
+        producer = AIOKafkaProducer(bootstrap_servers=KAFKA_BROKER)
         await producer.start()
         return producer
 
@@ -62,5 +42,4 @@ class KafkaClient(metaclass=MetaSingleton):
             raise exc
 
     async def stop(self):
-        logger.info("Stop kafka producer")
         await self.producer.stop()

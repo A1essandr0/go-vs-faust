@@ -1,6 +1,6 @@
 import random
 
-from locust import HttpUser, task, between, constant_throughput
+from locust import HttpUser, task
 
 
 request_template = "?source=[src]&event_name=event&event_status=status&payout=[pyt]"
@@ -11,9 +11,6 @@ def generate_random_value():
     return f"{random.randint(100,999)}"
 
 class SendingEvent(HttpUser):
-    # wait_time = between(1, 2)
-    # wait_time = constant_throughput(500)
-
     @task
     def send_event(self):
         request_string = request_template.replace(

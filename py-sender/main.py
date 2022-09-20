@@ -5,17 +5,6 @@ from faust.serializers import codecs
 from pydantic import BaseModel
 
 
-class AffsubEvent(BaseModel):
-    app_bundle: Optional[str] = None,
-    source: Optional[str] = None,
-    application_type: Optional[str] = None,
-    user_id: Optional[str] = None,
-    aff_sub_payload_raw: Optional[str] = None,
-    aff_sub_payload_parsed: Optional[str] = None,
-    aff_sub_type: Optional[str] = None,
-    ip_address: Optional[str] = None,
-    aff_sub_create_date: Optional[str] = None,
-
 class RawEvent(BaseModel):
     source: Optional[str] = None
     event_name: Optional[str] = None
@@ -39,11 +28,6 @@ class PydanticSerializer(codecs.Codec):
 app = faust.App(
     f"python-sender",
     broker="kafka-go-vs-faust:9092",
-    # broker="0.0.0.0:9093",
-    # broker_credentials=faust.SASLCredentials(
-    #     username="username",
-    #     password="password",
-    # ),
     web_host="0.0.0.0",
     web_port="6050",
 )
