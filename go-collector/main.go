@@ -12,14 +12,6 @@ import (
 	"github.com/lovoo/goka/codec"
 )
 
-type RawEvent struct {
-	Source string 		`json:"source"`
-	EventName string 	`json:"event_name"`
-	EventStatus string 	`json:"event_status"`
-	Created string 		`json:"created"`
-	Payout string 		`json:"payout"`
-}
-
 var (
 	// brokers = []string{"localhost:9093"}
 	brokers = []string{"kafka-go-vs-faust:9092"}
@@ -30,6 +22,7 @@ var (
 	cfg *sarama.Config
 	Emitter *goka.Emitter
 )
+
 
 func init() {
 	tmc = goka.NewTopicManagerConfig()

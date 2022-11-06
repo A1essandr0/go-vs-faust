@@ -26,6 +26,7 @@ var (
 	cfg *sarama.Config
 )
 
+
 func init() {
 	tmc = goka.NewTopicManagerConfig()
 	tmc.Table.Replication = 1
@@ -77,6 +78,7 @@ func runApplication() {
 
 	ctx, cancel := context.WithCancel(context.Background())
 	done := make(chan bool)
+
 	go func() {
 		defer close(done)
 		err = application.Run(ctx)
@@ -90,6 +92,7 @@ func runApplication() {
 	// mechanics to gracefully stop application
 	wait := make(chan os.Signal, 1)
 	signal.Notify(wait, syscall.SIGINT, syscall.SIGTERM)
+	log.Printf("Gracefully stopping...")
 	<- wait
 	cancel()
 	<- done
